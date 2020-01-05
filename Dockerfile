@@ -6,7 +6,7 @@ WORKDIR /build/ConsoleApp1
 RUN mkdir /build/out && dotnet build -o /build/out -c RELEASE
 
 FROM mcr.microsoft.com/dotnet/core/runtime:3.1-alpine
-COPY --from=builder /build/out/* /bili
+COPY --from=builder /build/out/* /bili/
 RUN mkdir /bili/data
 WORKDIR /bili/data
 VOLUME [ "/bili/data" ]
