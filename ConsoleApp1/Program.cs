@@ -12,9 +12,10 @@ namespace ConsoleApp1
     class Program
     {
         private static int roomid = 528819;
-        public static IContainer Container { get; private set; }
-        public static ILifetimeScope RootScope { get; private set; }
-        public static IRecorder Recorder { get; private set; }
+        private static IContainer Container { get; set; }
+        private static ILifetimeScope RootScope { get; set; }
+        private static IRecorder Recorder { get; set; }
+        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
         static void Main(string[] _)
         {
@@ -36,6 +37,7 @@ namespace ConsoleApp1
 
         private static void Run(CommandLineOption option)
         {
+            if (option.RoomID == 0) return;
             roomid = option.RoomID;
             Recorder.Config.AvoidTxy = true;
 
@@ -53,22 +55,22 @@ namespace ConsoleApp1
                 Task.WhenAll(Recorder.Where(r => r.RoomId == roomid).Select(x => Task.Run(() => x.StopRecord()))).Wait();
                 tokenSource.Cancel();
             };
-            task.Wait();
+            try
+            {
+                task.Wait();
+            }
+            catch (Exception)
+            {
+                logger.Info("停止录播");
+            }
         }
 
         private static void NumValue(CancellationToken token)
         {
-            bool cancellationFlag = false;
-            token.Register(() =>
-            cancellationFlag = true);
-            Console.WriteLine("starting the task");
+            logger.Info("开始录播");
             while (true)
             {
-                if (cancellationFlag)
-                {
-                    Console.WriteLine("task stop");
-                    return;
-                }
+                token.ThrowIfCancellationRequested();
                 Thread.Sleep(TimeSpan.FromSeconds(3));
             }
         }
