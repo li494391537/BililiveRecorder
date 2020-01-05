@@ -7,7 +7,7 @@ RUN mkdir /build/out && dotnet build -o /build/out -c RELEASE
 
 FROM mcr.microsoft.com/dotnet/core/runtime:3.1-alpine
 COPY --from=builder /build/out/* /bili/
-RUN mkdir /bili/data
+RUN apk add -U tzdata && ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && mkdir /bili/data
 WORKDIR /bili/data
 VOLUME [ "/bili/data" ]
 ENTRYPOINT ["dotnet", "../ConsoleApp1.dll", "-i"]
