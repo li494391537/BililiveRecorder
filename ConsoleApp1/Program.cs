@@ -45,34 +45,19 @@ namespace ConsoleApp1
             {
                 Recorder.AddRoom(roomid);
             }
+            logger.Info("开始录播");
+            bool shouldStop = false;
             Task.WhenAll(Recorder.Where(r => r.RoomId == roomid).Select(x => Task.Run(() => x.Start()))).Wait();
-
-            using CancellationTokenSource tokenSource = new CancellationTokenSource();
-            Task task = Task.Run(() => NumValue(tokenSource.Token), tokenSource.Token);
-
             Console.CancelKeyPress += (sender, e) =>
             {
                 Task.WhenAll(Recorder.Where(r => r.RoomId == roomid).Select(x => Task.Run(() => x.StopRecord()))).Wait();
-                tokenSource.Cancel();
+                shouldStop = true;
             };
-            try
+            while (!shouldStop)
             {
-                task.Wait();
-            }
-            catch (Exception)
-            {
-                logger.Info("停止录播");
-            }
-        }
-
-        private static void NumValue(CancellationToken token)
-        {
-            logger.Info("开始录播");
-            while (true)
-            {
-                token.ThrowIfCancellationRequested();
                 Thread.Sleep(TimeSpan.FromSeconds(3));
             }
+            logger.Info("停止录播");
         }
     }
 }
