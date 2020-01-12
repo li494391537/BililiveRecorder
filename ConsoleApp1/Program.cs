@@ -46,18 +46,22 @@ namespace ConsoleApp1
                 Recorder.AddRoom(roomid);
             }
             logger.Info("开始录播");
-            bool shouldStop = false;
             Task.WhenAll(Recorder.Where(r => r.RoomId == roomid).Select(x => Task.Run(() => x.Start()))).Wait();
             Console.CancelKeyPress += (sender, e) =>
             {
-                Task.WhenAll(Recorder.Where(r => r.RoomId == roomid).Select(x => Task.Run(() => x.StopRecord()))).Wait();
-                shouldStop = true;
-            };
-            while (!shouldStop)
-            {
-                Thread.Sleep(TimeSpan.FromSeconds(3));
-            }
+            Task.WhenAll(Recorder.Where(r => r.RoomId == roomid).Select(x => Task.Run(() => x.StopRecord()))).Wait();
             logger.Info("停止录播");
+            };
+            while (true)
+            {
+                Thread.Sleep(TimeSpan.FromSeconds(10));
+            }
         }
+    }
+
+    public class CommandLineOption
+    {
+        [Option('i', "id", Default = 0, HelpText = "room id", Required = false)]
+        public int RoomID { get; set; }
     }
 }
